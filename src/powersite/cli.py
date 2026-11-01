@@ -208,5 +208,47 @@ def sensitivity(
     console.print(table)
 
 
+@app.command()
+def breakeven(
+    site: str = typer.Option("Dallas County, TX", help="Site name"),
+    hurdle: float = typer.Option(0.08, help="Target median IRR"),
+    runs: int = typer.Option(2000, help="Monte Carlo runs per step"),
+):
+    """What capex ($M/MW) or rent ($/kW-mo) makes the site just hit the hurdle IRR?"""
+    from powersite.model import simulate_irrs, get_rent
+    st = next((s_ for s_ in SITES if s_[0].lower() == site.lower()), None)
+    if not st:
+        console.print(f"[red]Unknown site.[/red] Try: {', '.join(s_[0] for s_ in SITES)}")
+        raise typer.Exit(1)
+    BASE_CAPEX = 9.0  # $M/MW, the model's current placeholder
+
+    def med(**kw):
+        irrs, _ = simulate_irrs(st, 100, runs, **kw)
+        return float(np.median(irrs)) if len(irrs) else -1.0
+
+    def solve(f, lo, hi, increasing):
+        for _ in range(14):
+            mid = (lo + hi) / 2
+            if (f(mid) > hurdle) == increasing:
+                hi = mid
+            else:
+                lo = mid
+        return (lo + hi) / 2
+
+    with console.status("Solving..."):
+        base_irr = med()
+        capex_m = solve(lambda m: med(capex_mult=m), 0.5, 3.0, False)
+        rent_m = solve(lambda m: med(rent_mult=m), 0.5, 3.0, True)
+    rent = get_rent(st[0])
+    table = Table(title=f"{st[0]}: what does it take to earn {hurdle:.0%}?")
+    table.add_column("Metric"); table.add_column("Value")
+    table.add_row("Median IRR at model defaults", f"{base_irr:.1%}")
+    table.add_row("Model capex / rent", f"${BASE_CAPEX:.1f}M per MW / ${rent:.0f} per kW-mo")
+    table.add_row("Break-even capex at current rent", f"${BASE_CAPEX * capex_m:.1f}M per MW")
+    table.add_row("Break-even rent at ${:.1f}M capex".format(BASE_CAPEX), f"${rent * rent_m:.0f} per kW-mo")
+    table.add_row("Published US/Canada capex (C&W 2026)", "$8.9M to $23.3M per MW, avg $17.6M")
+    console.print(table)
+
+
 if __name__ == "__main__":
     app()
