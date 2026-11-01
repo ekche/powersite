@@ -15,6 +15,8 @@ def get_rent(site_name):
             return float(row["rent_kw_month"].iloc[0])
     return DEFAULT_RENT
 
+ESCALATOR = 0.025     # PLACEHOLDER: annual rent escalation
+EARLY_SHARE = 0.15    # PLACEHOLDER: share of capex spent upfront (land, early works)
 PUE_CAP = 1.30            # PLACEHOLDER: tenant pays power only up to this PUE
 WATER_COST_PER_MW = 100_000  # PLACEHOLDER: $/MW-year at water risk = 1.0
 
@@ -30,13 +32,18 @@ def simulate_irrs(site, mw=100, runs=10000, seed=42, capex_mult=1.0, rent_mult=1
         capex = rng.normal(9.0e6, 1.2e6) * mw * capex_mult
         revenue = rng.normal(rent * 12_000, rent * 12_000 * 0.13) * mw
         p = rng.normal(price, price * 0.2)
-        it_cost = 8760 * 0.7 * p * mw                    # energy cost of IT load
+        it_cost = 8760 * 0.7 * p * mw
         total_power = it_cost * pue
         recovered = it_cost * min(pue, PUE_CAP) * rng.uniform(0.85, 1.0)
-        net = revenue - total_power + recovered - 150_000 * mw - WATER_COST_PER_MW * water * mw
+        fixed = 150_000 * mw + WATER_COST_PER_MW * water * mw
         delay = int(rng.poisson(wait / 12))
-        flows = [-capex] + [0] * delay + [net] * 15
-        flows[-1] += 0.3 * capex
+        build = max(delay, 1)                      # year the main construction is paid
+        flows = [0.0] * (build + 1 + 15)
+        flows[0] -= EARLY_SHARE * capex
+        flows[build] -= (1 - EARLY_SHARE) * capex
+        for k in range(15):
+            flows[build + 1 + k] = (revenue - fixed) * (1 + ESCALATOR) ** k + (recovered - total_power)
+        flows[-1] += 0.3 * capex                   # residual value at the end
         irr = npf.irr(flows)
         if np.isnan(irr):
             failed += 1
