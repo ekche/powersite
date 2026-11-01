@@ -127,7 +127,7 @@ def rank(
     runs: int = typer.Option(2000, help="Monte Carlo runs per site"),
 ):
     """Rank sites by simulated median IRR (100 MW)."""
-    from powersite.model import simulate_irrs
+    from powersite.model import simulate_irrs, get_rent
     results = []
     with console.status("Simulating each site..."):
         for site in SITES:
@@ -136,11 +136,11 @@ def rank(
             results.append((site, float(np.median(irrs)), float(risk)))
     results.sort(key=lambda r: r[1], reverse=True)
     table = Table(title=f"Top {min(top, len(results))} sites by simulated median IRR")
-    for col in ["#", "Site", "Power $/MWh", "Grid wait (mo)", "Water risk", "PUE", "Median IRR", "P(IRR<8%)"]:
+    for col in ["#", "Site", "Power $/MWh", "Grid wait (mo)", "Water risk", "PUE", "Rent $/kW-mo", "Median IRR", "P(IRR<8%)"]:
         table.add_column(col)
     for i, (s_, med, risk) in enumerate(results[:top], 1):
         table.add_row(str(i), s_[0], str(s_[1]), str(s_[2]), str(s_[3]), str(s_[4]),
-                      f"{med:.1%}", f"{risk:.1%}")
+                      f"{get_rent(s_[0]):.0f}", f"{med:.1%}", f"{risk:.1%}")
     console.print(table)
 
 

@@ -1,0 +1,9 @@
+site,rent_kw_month,status,source
+"Loudoun County, VA",165,sourced,Datacentres.com Aug 2026 wholesale NoVA/DFW $155-175 midpoint
+"Dallas County, TX",165,sourced,Datacentres.com Aug 2026 wholesale NoVA/DFW $155-175 midpoint
+"Maricopa County, AZ",112.5,sourced,Datacentres.com Aug 2026 Phoenix $105-120 midpoint
+"Douglas County, GA",119,sourced,Datacentres.com Aug 2026 Atlanta $110-128 midpoint
+"Columbia County, OR",115,ASSUMED,replace with CBRE H1 2026 Hillsboro rate
+"Cheyenne, WY",115,ASSUMED,no public figure found
+"Polk County, IA",115,ASSUMED,no public figure found
+"Storey County, NV",115,ASSUMED,replace with CBRE H1 2026 Reno rate if available
