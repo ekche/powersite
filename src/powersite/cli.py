@@ -49,6 +49,22 @@ def apply_real_prices():
 apply_real_prices()
 
 
+def apply_real_wait(baseline_months=30):
+    f = Path("data/raw/grid_wait.csv")
+    if not f.exists():
+        return
+    import pandas as pd
+    gw = pd.read_csv(f)
+    idx = dict(zip(gw["state"], gw["congestion_index"]))
+    for i, site in enumerate(SITES):
+        st = SITE_STATES.get(site[0])
+        if st in idx:
+            SITES[i] = (site[0], site[1], round(baseline_months * float(idx[st]), 1), *site[3:])
+
+
+apply_real_wait()
+
+
 def score(price, wait, water, pue):
     return round(100 - 0.6 * price - 0.4 * wait - 25 * water - 30 * (pue - 1), 1)
 
@@ -66,6 +82,14 @@ def fetch_data():
         table.add_row(r["stateDescription"], f"{r['usd_per_mwh']:.1f}")
     console.print(table)
     console.print(f"[green]Saved {len(df)} rows to data/raw/eia_industrial_prices.csv[/green]")
+    from powersite.data import build_grid_wait
+    gw = build_grid_wait()
+    t2 = Table(title="Grid congestion from LBNL Queued Up (years, request to operation)")
+    for c in ["State", "Queue yrs", "Index", "Basis"]:
+        t2.add_column(c)
+    for _, r in gw.iterrows():
+        t2.add_row(r["state"], str(r["queue_years"]), str(r["congestion_index"]), r["basis"])
+    console.print(t2)
 
 
 @app.command()
