@@ -250,5 +250,37 @@ def breakeven(
     console.print(table)
 
 
+@app.command()
+def scenarios(
+    site: str = typer.Option("Dallas County, TX", help="Site name"),
+    runs: int = typer.Option(2000, help="Monte Carlo runs per cell"),
+):
+    """Median IRR across plausible values of the two placeholder assumptions."""
+    import powersite.model as pm
+    st = next((s_ for s_ in SITES if s_[0].lower() == site.lower()), None)
+    if not st:
+        console.print(f"[red]Unknown site.[/red] Try: {', '.join(s_[0] for s_ in SITES)}")
+        raise typer.Exit(1)
+    esc_vals = [0.0, 0.025, 0.04]
+    early_vals = [0.15, 0.40, 0.70]
+    orig = (pm.ESCALATOR, pm.EARLY_SHARE)
+    table = Table(title=f"{st[0]}: median IRR by capex timing (rows) and rent escalator (columns)")
+    table.add_column("Capex spent before power")
+    for e in esc_vals:
+        table.add_column(f"Escalator {e:.1%}")
+    try:
+        with console.status("Running scenarios..."):
+            for early in early_vals:
+                row = [f"{early:.0%}"]
+                for esc in esc_vals:
+                    pm.ESCALATOR, pm.EARLY_SHARE = esc, early
+                    irrs, _ = pm.simulate_irrs(st, 100, runs)
+                    row.append(f"{np.median(irrs):.1%}")
+                table.add_row(*row)
+    finally:
+        pm.ESCALATOR, pm.EARLY_SHARE = orig
+    console.print(table)
+
+
 if __name__ == "__main__":
     app()
