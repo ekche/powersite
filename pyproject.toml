@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "powersite"
+version = "0.1.0"
+description = "AI-driven data center siting and investment engine"
+requires-python = ">=3.10"
+dependencies = ["typer", "rich", "numpy", "numpy-financial", "pandas"]
+
+[project.scripts]
+powersite = "powersite.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
