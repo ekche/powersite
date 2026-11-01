@@ -122,14 +122,25 @@ def train():
 
 
 @app.command()
-def rank(top: int = typer.Option(10, help="How many sites to show")):
-    """Rank candidate sites by overall score."""
-    rows = sorted(SITES, key=lambda s: score(*s[1:]), reverse=True)[:top]
-    table = Table(title=f"Top {len(rows)} data center sites")
-    for col in ["#", "Site", "Power $/MWh", "Grid wait (mo)", "Water risk", "PUE", "Score"]:
+def rank(
+    top: int = typer.Option(10, help="How many sites to show"),
+    runs: int = typer.Option(2000, help="Monte Carlo runs per site"),
+):
+    """Rank sites by simulated median IRR (100 MW)."""
+    from powersite.model import simulate_irrs
+    results = []
+    with console.status("Simulating each site..."):
+        for site in SITES:
+            irrs, failed = simulate_irrs(site, 100, runs)
+            risk = ((irrs < 0.08).sum() + failed) / runs
+            results.append((site, float(np.median(irrs)), float(risk)))
+    results.sort(key=lambda r: r[1], reverse=True)
+    table = Table(title=f"Top {min(top, len(results))} sites by simulated median IRR")
+    for col in ["#", "Site", "Power $/MWh", "Grid wait (mo)", "Water risk", "PUE", "Median IRR", "P(IRR<8%)"]:
         table.add_column(col)
-    for i, s in enumerate(rows, 1):
-        table.add_row(str(i), s[0], str(s[1]), str(s[2]), str(s[3]), str(s[4]), str(score(*s[1:])))
+    for i, (s_, med, risk) in enumerate(results[:top], 1):
+        table.add_row(str(i), s_[0], str(s_[1]), str(s_[2]), str(s_[3]), str(s_[4]),
+                      f"{med:.1%}", f"{risk:.1%}")
     console.print(table)
 
 
@@ -140,33 +151,19 @@ def simulate(
     runs: int = typer.Option(10000, help="Monte Carlo runs"),
 ):
     """Monte Carlo IRR simulation for a site."""
-    match = next((s for s in SITES if s[0].lower() == site.lower()), None)
+    from powersite.model import simulate_irrs
+    match = next((s_ for s_ in SITES if s_[0].lower() == site.lower()), None)
     if not match:
-        console.print(f"[red]Unknown site.[/red] Try: {', '.join(s[0] for s in SITES)}")
+        console.print(f"[red]Unknown site.[/red] Try: {', '.join(s_[0] for s_ in SITES)}")
         raise typer.Exit(1)
-    _, price, wait, _, pue = match
-    rng = np.random.default_rng(42)
-    irrs = []
-    for _ in range(runs):
-        capex = rng.normal(9.0e6, 1.2e6) * mw              # $ per MW
-        revenue = rng.normal(1.9e6, 0.25e6) * mw            # $ per MW-year
-        p = rng.normal(price, price * 0.2)                 # power price shock
-        power_cost = 8760 * 0.7 * pue * p * mw
-        recovered = power_cost * rng.uniform(0.85, 1.0)  # tenant pays 85-100% of power
-        net = revenue - power_cost + recovered - 150_000 * mw
-        delay = int(rng.poisson(wait / 12))                # interconnect delay (years)
-        flows = [-capex] + [0] * delay + [net] * 15
-        flows[-1] += 0.3 * capex  # residual value of the facility at year 15
-        irr = npf.irr(flows)
-        if not np.isnan(irr):
-            irrs.append(irr)
-    irrs = np.array(irrs)
-    table = Table(title=f"{site}: {mw} MW, {len(irrs):,} simulations")
+    irrs, failed = simulate_irrs(match, mw, runs)
+    table = Table(title=f"{match[0]}: {mw} MW, {runs:,} simulations")
     table.add_column("Metric"); table.add_column("Value")
     table.add_row("Median IRR", f"{np.median(irrs):.1%}")
     table.add_row("5th percentile (bad case)", f"{np.percentile(irrs, 5):.1%}")
     table.add_row("95th percentile (good case)", f"{np.percentile(irrs, 95):.1%}")
-    table.add_row("Chance IRR < 8%", f"{(irrs < 0.08).mean():.1%}")
+    table.add_row("Chance IRR < 8% (incl. failed runs)", f"{((irrs < 0.08).sum() + failed) / runs:.1%}")
+    table.add_row("Runs with no valid IRR", f"{failed / runs:.1%}")
     console.print(table)
 
 
