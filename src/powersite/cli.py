@@ -65,6 +65,20 @@ def apply_real_wait(baseline_months=30):
 apply_real_wait()
 
 
+def apply_real_climate():
+    f = Path("data/raw/climate.csv")
+    if not f.exists():
+        return
+    import pandas as pd
+    pue = dict(zip(*[pd.read_csv(f)[c] for c in ["site", "pue_est"]]))
+    for i, site in enumerate(SITES):
+        if site[0] in pue:
+            SITES[i] = (*site[:4], float(pue[site[0]]))
+
+
+apply_real_climate()
+
+
 def score(price, wait, water, pue):
     return round(100 - 0.6 * price - 0.4 * wait - 25 * water - 30 * (pue - 1), 1)
 
@@ -90,6 +104,15 @@ def fetch_data():
     for _, r in gw.iterrows():
         t2.add_row(r["state"], str(r["queue_years"]), str(r["congestion_index"]), r["basis"])
     console.print(t2)
+    from powersite.data import build_climate
+    with console.status("Fetching climate data..."):
+        cl = build_climate()
+    t3 = Table(title="Climate and estimated PUE (2025 hourly temperature)")
+    for c in ["Site", "Free-cooling share", "Hot-hours share", "PUE est."]:
+        t3.add_column(c)
+    for _, r in cl.iterrows():
+        t3.add_row(r["site"], str(r["free_cooling_share"]), str(r["hot_hours_share"]), str(r["pue_est"]))
+    console.print(t3)
 
 
 @app.command()

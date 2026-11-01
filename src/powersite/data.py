@@ -64,3 +64,32 @@ def build_grid_wait(min_n: int = 15) -> pd.DataFrame:
     out = pd.DataFrame(rows)
     out.to_csv(RAW_DIR / "grid_wait.csv", index=False)
     return out
+
+
+SITE_COORDS = {
+    "Loudoun County, VA": (39.08, -77.64), "Maricopa County, AZ": (33.45, -112.07),
+    "Dallas County, TX": (32.78, -96.80), "Douglas County, GA": (33.75, -84.75),
+    "Columbia County, OR": (45.86, -122.81), "Cheyenne, WY": (41.14, -104.82),
+    "Polk County, IA": (41.59, -93.62), "Storey County, NV": (39.54, -119.44),
+}
+
+
+def build_climate(year: int = 2025) -> pd.DataFrame:
+    """Free-cooling share of the year (hours below 15C) and a rough PUE per site."""
+    import time
+    rows = []
+    for site, (lat, lon) in SITE_COORDS.items():
+        params = {"latitude": lat, "longitude": lon, "hourly": "temperature_2m",
+                  "start_date": f"{year}-01-01", "end_date": f"{year}-12-31", "timezone": "UTC"}
+        r = requests.get("https://archive-api.open-meteo.com/v1/archive", params=params, timeout=60)
+        r.raise_for_status()
+        temps = pd.Series(r.json()["hourly"]["temperature_2m"], dtype=float).dropna()
+        free = float((temps < 15).mean())
+        hot = float((temps > 30).mean())
+        pue = round(1.10 + 0.35 * (1 - free), 3)  # PLACEHOLDER formula
+        rows.append({"site": site, "free_cooling_share": round(free, 3),
+                     "hot_hours_share": round(hot, 3), "pue_est": pue})
+        time.sleep(1)
+    out = pd.DataFrame(rows)
+    out.to_csv(RAW_DIR / "climate.csv", index=False)
+    return out
