@@ -27,8 +27,17 @@ def score(price, wait, water, pue):
 
 @app.command()
 def fetch_data():
-    """Download and cache public datasets (coming soon)."""
-    console.print("[yellow]TODO:[/yellow] pull EIA, Berkeley Lab, NOAA, WRI data")
+    """Download and cache public datasets (EIA prices for now)."""
+    from powersite.data import fetch_eia_prices
+    with console.status("Fetching EIA industrial electricity prices..."):
+        df = fetch_eia_prices()
+    latest = df[df["period"] == df["period"].max()].sort_values("usd_per_mwh")
+    table = Table(title=f"Industrial power price by state ({latest['period'].iloc[0]})")
+    table.add_column("State"); table.add_column("$/MWh")
+    for _, r in latest.head(10).iterrows():
+        table.add_row(r["stateDescription"], f"{r['usd_per_mwh']:.1f}")
+    console.print(table)
+    console.print(f"[green]Saved {len(df)} rows to data/raw/eia_industrial_prices.csv[/green]")
 
 
 @app.command()

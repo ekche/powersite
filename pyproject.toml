@@ -7,7 +7,7 @@ name = "powersite"
 version = "0.1.0"
 description = "AI-driven data center siting and investment engine"
 requires-python = ">=3.10"
-dependencies = ["typer", "rich", "numpy", "numpy-financial", "pandas"]
+dependencies = ["typer", "rich", "numpy", "numpy-financial", "pandas", "requests"]
 
 [project.scripts]
 powersite = "powersite.cli:app"
