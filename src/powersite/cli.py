@@ -102,13 +102,14 @@ def simulate(
     irrs = []
     for _ in range(runs):
         capex = rng.normal(9.0e6, 1.2e6) * mw              # $ per MW
-        revenue = rng.normal(1.2e6, 0.2e6) * mw            # $ per MW-year
+        revenue = rng.normal(1.9e6, 0.25e6) * mw            # $ per MW-year
         p = rng.normal(price, price * 0.2)                 # power price shock
         power_cost = 8760 * 0.7 * pue * p * mw
         recovered = power_cost * rng.uniform(0.85, 1.0)  # tenant pays 85-100% of power
         net = revenue - power_cost + recovered - 150_000 * mw
         delay = int(rng.poisson(wait / 12))                # interconnect delay (years)
         flows = [-capex] + [0] * delay + [net] * 15
+        flows[-1] += 0.3 * capex  # residual value of the facility at year 15
         irr = npf.irr(flows)
         if not np.isnan(irr):
             irrs.append(irr)
