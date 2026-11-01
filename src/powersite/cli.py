@@ -21,6 +21,34 @@ SITES = [
 ]
 
 
+from pathlib import Path
+
+SITE_STATES = {
+    "Loudoun County, VA": "VA", "Maricopa County, AZ": "AZ",
+    "Dallas County, TX": "TX", "Douglas County, GA": "GA",
+    "Columbia County, OR": "OR", "Cheyenne, WY": "WY",
+    "Polk County, IA": "IA", "Storey County, NV": "NV",
+}
+
+
+def apply_real_prices():
+    """Replace placeholder power prices with real EIA state prices if downloaded."""
+    f = Path("data/raw/eia_industrial_prices.csv")
+    if not f.exists():
+        return
+    import pandas as pd
+    df = pd.read_csv(f)
+    df = df[df["period"] == df["period"].max()]
+    prices = dict(zip(df["stateid"], df["usd_per_mwh"]))
+    for i, site in enumerate(SITES):
+        st = SITE_STATES.get(site[0])
+        if st in prices:
+            SITES[i] = (site[0], float(prices[st]), *site[2:])
+
+
+apply_real_prices()
+
+
 def score(price, wait, water, pue):
     return round(100 - 0.6 * price - 0.4 * wait - 25 * water - 30 * (pue - 1), 1)
 
