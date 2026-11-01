@@ -167,5 +167,46 @@ def simulate(
     console.print(table)
 
 
+@app.command()
+def sensitivity(
+    site: str = typer.Option("Dallas County, TX", help="Site name"),
+    swing: float = typer.Option(0.20, help="+/- change applied to each input"),
+    runs: int = typer.Option(3000, help="Monte Carlo runs per case"),
+):
+    """Which inputs move IRR the most? (one at a time, +/- swing)"""
+    from powersite.model import simulate_irrs
+    base_site = next((s_ for s_ in SITES if s_[0].lower() == site.lower()), None)
+    if not base_site:
+        console.print(f"[red]Unknown site.[/red] Try: {', '.join(s_[0] for s_ in SITES)}")
+        raise typer.Exit(1)
+    name, price, wait, water, pue = base_site
+
+    def med(st, **kw):
+        irrs, _ = simulate_irrs(st, 100, runs, **kw)
+        return float(np.median(irrs))
+
+    cases = {
+        "Rent": lambda f: med(base_site, rent_mult=f),
+        "Capex": lambda f: med(base_site, capex_mult=f),
+        "Power price": lambda f: med((name, price * f, wait, water, pue)),
+        "Grid wait": lambda f: med((name, price, wait * f, water, pue)),
+        "PUE": lambda f: med((name, price, wait, water, pue * f)),
+        "Water risk": lambda f: med((name, price, wait, water * f, pue)),
+    }
+    base = med(base_site)
+    rows = []
+    with console.status("Running sensitivity cases..."):
+        for k, fn in cases.items():
+            lo, hi = fn(1 - swing), fn(1 + swing)
+            rows.append((k, lo, hi, abs(hi - lo)))
+    rows.sort(key=lambda r: r[3], reverse=True)
+    table = Table(title=f"{base_site[0]}: base median IRR {base:.1%}, each input +/-{swing:.0%}")
+    for col in ["Input", f"IRR at -{swing:.0%}", f"IRR at +{swing:.0%}", "Swing (pts)"]:
+        table.add_column(col)
+    for k, lo, hi, sw in rows:
+        table.add_row(k, f"{lo:.1%}", f"{hi:.1%}", f"{sw * 100:.1f}")
+    console.print(table)
+
+
 if __name__ == "__main__":
     app()
