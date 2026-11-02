@@ -15,29 +15,28 @@ pip install -e .
 
 ## Get the data
 
-Without `fetch-data`, `rank` and `simulate` still run, but on built-in placeholder inputs, so results will differ from the real-data numbers in this README.
+Run these steps from the repository root.
 
-`fetch-data` needs a free EIA API key (register at https://www.eia.gov/opendata/). Set it in your shell first:
+1. Download the LBNL interconnection queue workbook (Berkeley Lab, *Queued Up*) and save it as `data/raw/lbnl_queued_up.xlsx`.
+2. Get a free EIA API key at https://www.eia.gov/opendata/ and set it (replace the placeholder with your real key):
 
 ```bash
 export EIA_API_KEY=your_key_here
 ```
 
+3. Build the datasets:
+
 ```bash
 powersite fetch-data
 ```
 
-Save the LBNL workbook first (see below), then run this from the repository root. It builds, under `data/` (git-ignored):
+This writes, under `data/` (git-ignored):
 
 - **EIA** industrial electricity prices by state
 - **Grid congestion index** from the LBNL *Queued Up* dataset (state-level queue years where available, regional otherwise)
 - **Climate / PUE estimate** from 2025 hourly temperature (free-cooling and hot-hour shares)
 
-One step is manual: download the LBNL interconnection queue workbook (Berkeley Lab, *Queued Up*) and save it as:
-
-```
-data/raw/lbnl_queued_up.xlsx
-```
+Without `fetch-data`, `rank` and `simulate` still run, but with built-in placeholder power prices, grid waits and PUE values, so results will differ from the real-data numbers in this README.
 
 ## Commands
 
@@ -66,12 +65,13 @@ data/raw/lbnl_queued_up.xlsx
 ## Known limitations
 
 - **Capex dominates.** Median IRR at $9M / $13M / $17.6M per MW: Dallas 18.4% / 12.4% / 8.3%, Loudoun 18.3% / 12.4% / 8.4%, and the other six sites 10.6-12.2% / 6.1-7.4% / 3.2-4.2%. At $13M/MW and above, only the two $165 rent sites clear an 8% IRR.
-- **Escalator and capex timing are placeholders.** Adding them lifted Dallas from 12.8% to 18.4% and collapsed the grid-delay penalty. `powersite scenarios` shows the range (13.6% to 19.7%).
+- **Escalator and capex timing are placeholders.** Adding them lifted Dallas from 12.8% to 18.4% and collapsed the grid-delay penalty. `powersite scenarios` shows the range for Dallas at the $9M default (13.6% to 19.7%).
+- **Capex is the same for every site**, although published costs vary by market (coverage reports Texas among the cheaper markets), so the $17.6M case is pessimistic for Dallas.
 - **Site list is small** (8 sites) and water risk is a hand-set score.
 - **Modeled terminal value** is 30% of capex at year 15.
 - **Unlevered, pre-tax IRR.** Assumes full lease-up from day one; tenants reimburse power up to PUE 1.30.
 - **Grid wait is a proxy.** LBNL Queued Up measures generation interconnection, not data center load interconnection.
-- **Power price and water risk barely move IRR** (about 0.2 points) because of pass-through; site ranking is driven mainly by rent and capex, and small gaps between sites are within noise.
+- **Power price barely moves IRR** (about 0.2 points per +/-20%) because tenants reimburse most power cost, and water risk has a similarly small modeled effect; site ranking is driven mainly by rent and capex, and small gaps between sites are within noise.
 - **Run from the repo root.** Data and rent files are read relative to the current directory; otherwise defaults are used silently.
 - **Four of eight rents are assumptions** (Columbia, Cheyenne, Polk, Storey at $115), so their IRRs and relative order reflect that assumption, not market data. Dallas and Loudoun share one rent figure, so their near-identical results are partly by construction.
 - See `CHANGELOG.md` for how each change moved the results.
