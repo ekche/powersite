@@ -16,6 +16,12 @@ pip install openpyxl
 
 ## Get the data
 
+`fetch-data` needs a free EIA API key (register at https://www.eia.gov/opendata/). Set it in your shell first:
+
+```bash
+export EIA_API_KEY=your_key_here
+```
+
 ```bash
 powersite fetch-data
 ```
