@@ -56,8 +56,8 @@ data/raw/lbnl_queued_up.xlsx
 |---|---|---|
 | Power price | EIA state industrial prices | Real data |
 | Grid wait | LBNL Queued Up, scaled to a 30-month baseline | Real index, placeholder baseline |
-| PUE | Estimated from 2025 hourly temperature | Estimate |
-| Rent ($/kW-month) | `config/rents.csv` (CBRE and trade sources) | Sourced |
+| PUE | Estimated from 2025 hourly temperature (Open-Meteo historical archive) | Estimate |
+| Rent ($/kW-month) | `config/rents.csv`: Datacentres.com Aug 2026 ranges (NoVA/DFW, Phoenix, Atlanta), midpoints | 4 of 8 sites sourced; Oregon, Wyoming, Iowa and Nevada are assumed at $115 |
 | Water risk | Hand-assigned 0-1 score | Placeholder |
 | Capex | $9.0M/MW default (published range $8.9M-$23.3M, avg $17.6M, Cushman & Wakefield 2026) | Default is far below the published average |
 | Rent escalator | 2.5%/yr | Placeholder |
@@ -73,4 +73,12 @@ data/raw/lbnl_queued_up.xlsx
 - **Grid wait is a proxy.** LBNL Queued Up measures generation interconnection, not data center load interconnection.
 - **Power price and water risk barely move IRR** (about 0.2 points) because of pass-through; site ranking is driven mainly by rent and capex, and small gaps between sites are within noise.
 - **Run from the repo root.** Data and rent files are read relative to the current directory; otherwise defaults are used silently.
+- **Four of eight rents are assumptions** (Columbia, Cheyenne, Polk, Storey at $115), so their IRRs and relative order reflect that assumption, not market data. Dallas and Loudoun share one rent figure, so their near-identical results are partly by construction.
 - See `CHANGELOG.md` for how each change moved the results.
+
+## Data attribution
+
+- Electricity prices: U.S. Energy Information Administration (EIA) Open Data.
+- Interconnection queues: Lawrence Berkeley National Laboratory, *Queued Up*.
+- Historical weather: [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0); see their terms for usage limits.
+- Rents: Datacentres.com market ranges (Aug 2026), as listed in `config/rents.csv`.
