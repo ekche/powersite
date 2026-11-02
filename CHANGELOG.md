@@ -10,6 +10,6 @@
 | Rent escalator 2.5% + staged capex | 18.4% | both placeholders; grid delay penalty collapsed |
 | Scenario grid (escalator x capex timing) | 13.6% to 19.7% | placeholders only; excludes capex |
 | Capex sweep: $9M / $13M / $17.6M per MW | 18.4% / 12.4% / 8.3% | capex dominates; Dallas ~ Loudoun at every level |
+| Capex sweep, all 8 sites ($9M / $13M / $17.6M) | Dallas and Loudoun 18.4% / 12.4% / 8.3-8.4%; other six 10.6-12.2% / 6.1-7.4% / 3.2-4.2% | rent tier ($165 vs $112-119) separates sites; 2,000 runs per cell |
 
 Note: LBNL grid wait (Dallas 12.2% to 12.8%) and climate PUE were applied between the recalibration and PUE-cap rows, so the PUE-cap effect is not isolated.
-| Capex sweep, all 8 sites ($9M / $13M / $17.6M) | Dallas and Loudoun 18.4% / 12.4% / 8.3-8.4%; other six 10.6-12.2% / 6.1-7.4% / 3.2-4.2% | rent tier ($165 vs $112-119) separates sites; 2,000 runs per cell |

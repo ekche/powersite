@@ -64,7 +64,7 @@ data/raw/lbnl_queued_up.xlsx
 
 ## Known limitations
 
-- **Capex dominates.** Median IRR at $9M / $13M / $17.6M per MW: Dallas 18.4% / 12.4% / 8.3%, Loudoun 18.3% / 12.4% / 8.4%, and the other six sites 10.6-12.2% / 6.1-7.4% / 3.2-4.2%. Above about $13M/MW, only the two $165 rent sites clear an 8% IRR.
+- **Capex dominates.** Median IRR at $9M / $13M / $17.6M per MW: Dallas 18.4% / 12.4% / 8.3%, Loudoun 18.3% / 12.4% / 8.4%, and the other six sites 10.6-12.2% / 6.1-7.4% / 3.2-4.2%. At $13M/MW and above, only the two $165 rent sites clear an 8% IRR.
 - **Escalator and capex timing are placeholders.** Adding them lifted Dallas from 12.8% to 18.4% and collapsed the grid-delay penalty. `powersite scenarios` shows the range (13.6% to 19.7%).
 - **Site list is small** (8 sites) and water risk is a hand-set score.
 - **Modeled terminal value** is 30% of capex at year 15.
