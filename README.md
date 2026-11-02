@@ -2,7 +2,7 @@
 
 A command-line tool that ranks candidate US data center sites by simulated investment return. It combines real public data (power prices, grid interconnection queues, climate) with a Monte Carlo IRR model for a wholesale-colocation-style build.
 
-> **Read this first:** the model is a work in progress. Several inputs are placeholders (see Known limitations), and the headline IRRs are very sensitive to capex. At the published average capex of about $17.6M/MW, the median IRR is roughly 8%, not the 18% you get at the model's $9M/MW default. Treat outputs as a framework for comparing sites, not as investment advice.
+> **Read this first:** the model is a work in progress. Several inputs are placeholders (see Known limitations), and the headline IRRs are very sensitive to capex. At the published average capex of about $17.6M/MW, only Dallas and Loudoun (the two $165/kW-month rent sites) come out near 8% (8.3% and 8.4%); the other six sites fall to 3.2% to 4.2%, from 10.6% to 12.2% at the model's $9M/MW default. Treat outputs as a framework for comparing sites, not as investment advice.
 
 ## Install
 
@@ -64,7 +64,7 @@ data/raw/lbnl_queued_up.xlsx
 
 ## Known limitations
 
-- **Capex dominates.** Dallas median IRR at $9M / $13M / $17.6M per MW is 18.4% / 12.4% / 8.3%. Dallas and Loudoun are nearly identical at every capex level.
+- **Capex dominates.** Median IRR at $9M / $13M / $17.6M per MW: Dallas 18.4% / 12.4% / 8.3%, Loudoun 18.3% / 12.4% / 8.4%, and the other six sites 10.6-12.2% / 6.1-7.4% / 3.2-4.2%. Above about $13M/MW, only the two $165 rent sites clear an 8% IRR.
 - **Escalator and capex timing are placeholders.** Adding them lifted Dallas from 12.8% to 18.4% and collapsed the grid-delay penalty. `powersite scenarios` shows the range (13.6% to 19.7%).
 - **Site list is small** (8 sites) and water risk is a hand-set score.
 - **Modeled terminal value** is 30% of capex at year 15.
