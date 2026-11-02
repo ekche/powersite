@@ -73,7 +73,7 @@ Without `fetch-data`, `rank` and `simulate` still run, but with built-in placeho
 - **Grid wait is a proxy.** LBNL Queued Up measures generation interconnection, not data center load interconnection.
 - **Power price barely moves IRR** (about 0.2 points per +/-20%) because tenants reimburse most power cost, and water risk has a similarly small modeled effect; site ranking is driven mainly by rent and capex, and small gaps between sites are within noise.
 - **Run from the repo root.** Data and rent files are read relative to the current directory; otherwise defaults are used silently.
-- **Four of eight rents are assumptions** (Columbia, Cheyenne, Polk, Storey at $115), so their IRRs and relative order reflect that assumption, not market data. Dallas and Loudoun share one rent figure, so their near-identical results are partly by construction.
+- **Four of eight rents are assumptions** (Columbia, Cheyenne, Polk, Storey at $115), so their IRRs and relative order reflect that assumption, not market data. Dallas and Loudoun share one rent figure ($165, from a combined NoVA/DFW range), so their near-identical results are partly by construction; at Dallas rents of $130 / $140 / $150 the median IRR at $9M capex is 13.7% / 15.1% / 16.5%.
 - See `CHANGELOG.md` for how each change moved the results.
 
 ## Data attribution
