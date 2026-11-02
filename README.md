@@ -11,10 +11,11 @@ git clone https://github.com/ekche/powersite.git
 cd powersite
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
-pip install openpyxl
 ```
 
 ## Get the data
+
+Without `fetch-data`, `rank` and `simulate` still run, but on built-in placeholder inputs, so results will differ from the real-data numbers in this README.
 
 `fetch-data` needs a free EIA API key (register at https://www.eia.gov/opendata/). Set it in your shell first:
 
