@@ -2,7 +2,7 @@
 
 A command-line tool that ranks candidate US data center sites by simulated investment return. It combines real public data (power prices, grid interconnection queues, climate) with a Monte Carlo IRR model for a wholesale-colocation-style build.
 
-> **Read this first:** the model is a work in progress. Several inputs are placeholders (see [Known limitations](#known-limitations)), and the headline IRRs are very sensitive to capex. At the published average capex of about $17.6M/MW, the median IRR is roughly 8%, not the 18% you get at the model's $9M/MW default. Treat outputs as a framework for comparing sites, not as investment advice.
+> **Read this first:** the model is a work in progress. Several inputs are placeholders (see Known limitations), and the headline IRRs are very sensitive to capex. At the published average capex of about $17.6M/MW, the median IRR is roughly 8%, not the 18% you get at the model's $9M/MW default. Treat outputs as a framework for comparing sites, not as investment advice.
 
 ## Install
 
@@ -20,13 +20,17 @@ pip install openpyxl
 powersite fetch-data
 ```
 
-This downloads and builds, under `data/` (git-ignored):
+This builds, under `data/` (git-ignored):
 
 - **EIA** industrial electricity prices by state
 - **Grid congestion index** from the LBNL *Queued Up* dataset (state-level queue years where available, regional otherwise)
 - **Climate / PUE estimate** from 2025 hourly temperature (free-cooling and hot-hour shares)
 
 One step is manual: download the LBNL interconnection queue workbook (Berkeley Lab, *Queued Up*) and save it as:
+
+```
+data/raw/lbnl_queued_up.xlsx
+```
 
 ## Commands
 
@@ -35,7 +39,7 @@ One step is manual: download the LBNL interconnection queue workbook (Berkeley L
 | `powersite fetch-data` | Download and build all input data |
 | `powersite rank --top 10` | Rank sites by simulated median IRR and P(IRR < 8%) |
 | `powersite simulate --site "Dallas County, TX" --mw 100` | Monte Carlo IRR distribution for one site |
-| `powersite sensitivity --site "Dallas County, TX"` | Tornado-style table: IRR swing from +/-20% on each input |
+| `powersite sensitivity --site "Dallas County, TX"` | IRR swing from +/-20% on each input |
 | `powersite breakeven --site "Dallas County, TX"` | Capex and rent needed to hit an 8% IRR |
 | `powersite scenarios --site "Dallas County, TX"` | IRR across rent-escalator and capex-timing assumptions |
 
